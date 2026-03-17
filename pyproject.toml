@@ -34,7 +34,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "aieng-platform-onboard>=0.6.2",
+    "aieng-platform-onboard>=0.6.3",
     "mypy>=1.19.0",
     "codecov>=2.1.13",
     "ipykernel>=7.1.0",

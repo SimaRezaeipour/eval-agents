@@ -114,7 +114,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "aieng-platform-onboard", specifier = ">=0.6.2" },
+    { name = "aieng-platform-onboard", specifier = ">=0.6.3" },
     { name = "codecov", specifier = ">=2.1.13" },
     { name = "ipykernel", specifier = ">=7.1.0" },
     { name = "ipython", specifier = ">=9.8.0" },
@@ -221,7 +221,7 @@ dev = [
 
 [[package]]
 name = "aieng-platform-onboard"
-version = "0.6.2"
+version = "0.6.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "authlib" },
@@ -234,6 +234,7 @@ dependencies = [
     { name = "google-cloud-storage" },
     { name = "openai" },
     { name = "pandas" },
+    { name = "pyjwt" },
     { name = "python-dotenv" },
     { name = "requests" },
     { name = "rich" },
@@ -241,9 +242,9 @@ dependencies = [
     { name = "virtualenv" },
     { name = "weaviate-client" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/26/2b12be7378936e82d861a360a03f9daf43efd094cdf87e1d5f4beef0dbb4/aieng_platform_onboard-0.6.2.tar.gz", hash = "sha256:e4cc9852afcbe926daf041a63fb190def585f3f816a39f06c17f431be2e71719", size = 34846 }
+sdist = { url = "https://files.pythonhosted.org/packages/dd/c1/b07ef5084e0b337a2e910305629aa9aa131d4e5eee7e8f643f89f6f47060/aieng_platform_onboard-0.6.3.tar.gz", hash = "sha256:c1e3f8b838d1e34ba94d5127e04bc2504385423d666cebffc39852aeaff6e4bc", size = 34885 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/70/2dc99e9dcdaf4c145d5fba415c7334ec9432b3f5dc51d54d87ba934de8ab/aieng_platform_onboard-0.6.2-py3-none-any.whl", hash = "sha256:2cff687d0381914de4917ad51e5e5efe04ec7a667426cb653f56ea3956c7b701", size = 42306 },
+    { url = "https://files.pythonhosted.org/packages/28/68/687852344e63484cb827c2a8a455b1e34ca897f3a9284dfd6c0ccb099da6/aieng_platform_onboard-0.6.3-py3-none-any.whl", hash = "sha256:113ac4a7409bcd56f2899c12fe166915e9b7190d4a9d1cb7f730cfa1b551ec8a", size = 42315 },
 ]
 
 [[package]]
@@ -566,14 +567,14 @@ wheels = [
 
 [[package]]
 name = "authlib"
-version = "1.6.7"
+version = "1.6.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/dc/ed1681bf1339dd6ea1ce56136bad4baabc6f7ad466e375810702b0237047/authlib-1.6.7.tar.gz", hash = "sha256:dbf10100011d1e1b34048c9d120e83f13b35d69a826ae762b93d2fb5aafc337b", size = 164950 }
+sdist = { url = "https://files.pythonhosted.org/packages/af/98/00d3dd826d46959ad8e32af2dbb2398868fd9fd0683c26e56d0789bd0e68/authlib-1.6.9.tar.gz", hash = "sha256:d8f2421e7e5980cc1ddb4e32d3f5fa659cfaf60d8eaf3281ebed192e4ab74f04", size = 165134 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f8/00/3ed12264094ec91f534fae429945efbaa9f8c666f3aa7061cc3b2a26a0cd/authlib-1.6.7-py2.py3-none-any.whl", hash = "sha256:c637340d9a02789d2efa1d003a7437d10d3e565237bcb5fcbc6c134c7b95bab0", size = 244115 },
+    { url = "https://files.pythonhosted.org/packages/53/23/b65f568ed0c22f1efacb744d2db1a33c8068f384b8c9b482b52ebdbc3ef6/authlib-1.6.9-py2.py3-none-any.whl", hash = "sha256:f08b4c14e08f0861dc18a32357b33fbcfd2ea86cfe3fe149484b4d764c4a0ac3", size = 244197 },
 ]
 
 [[package]]
