@@ -1,0 +1,84 @@
+"""Unit tests for the evaluation runner (evaluate_one, no real LLM)."""
+
+from __future__ import annotations
+
+from unittest.mock import patch
+
+import pytest
+
+from evaluation.run_eval import METRIC_COLS, evaluate_one
+
+
+def _gold_query() -> dict:
+    return {
+        "id": "q001", "tier": "T1",
+        "query": "What was AAPL vol in 2019?",
+        "gold_plan": [
+            {"id": "s1", "tool": "load_prices",
+             "args": {"ticker": "AAPL", "start": "2019-01-01", "end": "2019-12-31"}},
+            {"id": "s2", "tool": "compute_returns", "args": {"prices_ref": "s1"}},
+            {"id": "s3", "tool": "compute_volatility",
+             "args": {"returns_ref": "s2", "window": 30}},
+        ],
+        "gold_answer": {"AAPL_vol_2019": 0.16},
+        "required_facts": ["AAPL_vol_2019"],
+        "tolerance": 0.10,
+    }
+
+
+def _good_trace() -> dict:
+    return {
+        "query": "What was AAPL vol in 2019?",
+        "plan": {"steps": [
+            {"id": "s1", "tool": "load_prices",
+             "args": {"ticker": "AAPL", "start": "2019-01-01", "end": "2019-12-31"}},
+            {"id": "s2", "tool": "compute_returns", "args": {"prices_ref": "s1"}},
+            {"id": "s3", "tool": "compute_volatility",
+             "args": {"returns_ref": "s2", "window": 30}},
+        ]},
+        "state": {"s3": "0.16"},
+        "errors": [],
+        "answer": {
+            "summary": "AAPL vol 2019 = 0.16",
+            "claims": [{"statement": "AAPL_vol_2019", "value": 0.16, "source_step": "s3"}],
+            "caveats": [],
+        },
+        "latency_s": 1.0,
+    }
+
+
+class TestEvaluateOne:
+    def test_returns_all_metric_cols(self) -> None:
+        system_fn = lambda q: _good_trace()  # noqa: E731
+        with patch("evaluation.evaluators.faithfulness.complete", return_value='[{"supported": true}]'), \
+             patch("evaluation.evaluators.alignment.complete", return_value='{"score": 5}'):
+            row = evaluate_one("agent", system_fn, _gold_query())
+        for col in METRIC_COLS + ["system", "qid", "tier", "latency_s"]:
+            assert col in row
+
+    def test_perfect_deterministic_scores(self) -> None:
+        system_fn = lambda q: _good_trace()  # noqa: E731
+        with patch("evaluation.evaluators.faithfulness.complete", return_value='[{"supported": true}]'), \
+             patch("evaluation.evaluators.alignment.complete", return_value='{"score": 5}'):
+            row = evaluate_one("agent", system_fn, _gold_query())
+        assert row["completion"] == pytest.approx(1.0)
+        assert row["tool_f1"] == pytest.approx(1.0)
+
+    def test_system_crash_returns_zero_scores(self) -> None:
+        def crashing_fn(q):
+            raise RuntimeError("LLM unavailable")
+
+        with patch("evaluation.evaluators.faithfulness.complete", return_value='[]'), \
+             patch("evaluation.evaluators.alignment.complete", return_value='{"score": 1}'):
+            row = evaluate_one("agent", crashing_fn, _gold_query())
+
+        assert row["completion"] == 0.0
+        assert row["tool_f1"] == 0.0
+
+    def test_system_name_in_row(self) -> None:
+        system_fn = lambda q: _good_trace()  # noqa: E731
+        with patch("evaluation.evaluators.faithfulness.complete", return_value='[]'), \
+             patch("evaluation.evaluators.alignment.complete", return_value='{"score": 3}'):
+            row = evaluate_one("baseline", system_fn, _gold_query())
+        assert row["system"] == "baseline"
+        assert row["tier"] == "T1"

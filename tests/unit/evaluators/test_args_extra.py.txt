@@ -1,0 +1,65 @@
+"""Extra coverage for args evaluator edge cases."""
+
+from __future__ import annotations
+
+import pytest
+
+from evaluation.evaluators.args import _args_match, _step_score, score
+
+
+class TestArgsMatch:
+    def test_none_none(self) -> None:
+        assert _args_match(None, None) is True
+
+    def test_none_vs_value(self) -> None:
+        assert _args_match(None, 1.0) is False
+
+    def test_numeric_within_tolerance(self) -> None:
+        assert _args_match(30, 30) is True
+
+    def test_numeric_outside_tolerance(self) -> None:
+        assert _args_match(100.0, 1.0) is False
+
+    def test_zero_gold(self) -> None:
+        assert _args_match(0.0, 0.0) is True
+        assert _args_match(0.1, 0.0) is False
+
+    def test_non_numeric_fallback(self) -> None:
+        assert _args_match("log", "log") is True
+        assert _args_match("log", "simple") is False
+
+
+class TestStepScore:
+    def test_empty_gold_args_vacuously_correct(self) -> None:
+        assert _step_score({"extra": 1}, {}) == pytest.approx(1.0)
+
+    def test_missing_key_penalised(self) -> None:
+        score = _step_score({}, {"ticker": "AAPL"})
+        assert score == pytest.approx(0.0)
+
+    def test_extra_keys_ignored(self) -> None:
+        # extra keys in pred don't count against score
+        score = _step_score({"ticker": "AAPL", "extra": True}, {"ticker": "AAPL"})
+        assert score == pytest.approx(1.0)
+
+
+class TestScoreEdgeCases:
+    def test_mismatched_tool_in_step_scores_zero(self) -> None:
+        trace = {"plan": {"steps": [
+            {"id": "s1", "tool": "compute_returns", "args": {"prices_ref": "s1"}},
+        ]}}
+        gold = {"gold_plan": [
+            {"id": "s1", "tool": "load_prices",
+             "args": {"ticker": "AAPL", "start": "2019-01-01", "end": "2019-12-31"}},
+        ]}
+        result = score(trace, gold)
+        assert result == pytest.approx(0.0)
+
+    def test_fewer_pred_steps_than_gold(self) -> None:
+        trace = {"plan": {"steps": []}}
+        gold = {"gold_plan": [
+            {"id": "s1", "tool": "load_prices", "args": {"ticker": "AAPL"}},
+            {"id": "s2", "tool": "compute_returns", "args": {"prices_ref": "s1"}},
+        ]}
+        result = score(trace, gold)
+        assert result == pytest.approx(0.0)
