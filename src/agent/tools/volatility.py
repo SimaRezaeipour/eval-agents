@@ -22,17 +22,23 @@ def compute_volatility(
     Returns:
         Scalar float — the volatility at the last available date.
 
-    Raises:
-        ValueError: If fewer than *window* observations are available.
+    Falls back to the largest available window when the requested window is
+    longer than the available history so short-series calculations still work.
     """
     if not isinstance(returns_ref, pd.Series):
         raise TypeError("returns_ref must be a pandas Series.")
-    if len(returns_ref) < window:
-        raise ValueError(
-            f"Not enough data: have {len(returns_ref)} rows, need at least {window}."
-        )
 
-    rolling_std = returns_ref.rolling(window).std().dropna()
+    if len(returns_ref) == 0:
+        raise ValueError("Not enough data: no returns available.")
+
+    effective_window = min(window, len(returns_ref))
+    if effective_window < 2:
+        raise ValueError("Not enough data: need at least 2 observations.")
+
+    rolling_std = returns_ref.rolling(effective_window).std().dropna()
+    if rolling_std.empty:
+        raise ValueError("Not enough data to compute volatility.")
+
     vol = float(rolling_std.iloc[-1])
 
     if annualize:

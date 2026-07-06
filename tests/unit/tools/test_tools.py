@@ -80,10 +80,14 @@ class TestComputeVolatility:
         vol_raw = compute_volatility(sample_returns, window=30, annualize=False)
         assert vol_ann == pytest.approx(vol_raw * math.sqrt(252), rel=1e-6)
 
-    def test_insufficient_data_raises(self) -> None:
+    def test_short_series_falls_back_to_available_history(self) -> None:
         short = pd.Series([0.01, -0.01, 0.02])
-        with pytest.raises(ValueError, match="Not enough data"):
-            compute_volatility(short, window=30)
+        vol = compute_volatility(short, window=30)
+        assert isinstance(vol, float)
+
+    def test_empty_series_raises(self) -> None:
+        with pytest.raises(ValueError, match="no returns available"):
+            compute_volatility(pd.Series([], dtype=float), window=30)
 
     def test_non_series_raises(self) -> None:
         with pytest.raises(TypeError):
