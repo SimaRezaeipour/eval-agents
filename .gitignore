@@ -34,3 +34,16 @@ implementations/report_generation/data/*.csv
 implementations/report_generation/data/*.xls
 implementations/report_generation/data/*.xlsx
 implementations/aml_investigation/data/*.jsonl
+
+# Local evaluation data and generated outputs
+benchmark/
+results/
+dataset/
+dataset.zip
+data/processed/prices.parquet/
+data/processed/universe.csv
+data/traces/traces.jsonl
+
+# Local SSH helper artifacts
+"eval \"$(ssh-agent -s)\""
+"eval \"$(ssh-agent -s)\".pub"
