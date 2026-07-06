@@ -25,6 +25,7 @@ SYSTEMS: dict[str, Any] = {
 }
 
 METRIC_COLS = ["completion", "tool_f1", "args", "numeric", "faithfulness", "alignment"]
+OVERALL_METRIC_COL = "overall"
 
 
 def evaluate_one(system_name: str, system_fn: Any, query: dict[str, Any]) -> dict[str, Any]:
@@ -35,7 +36,7 @@ def evaluate_one(system_name: str, system_fn: Any, query: dict[str, Any]) -> dic
         logger.error("System %s failed on qid=%s: %s", system_name, query["id"], exc)
         trace = {"query": query["query"], "plan": [], "state": {}, "errors": [str(exc)], "answer": {}, "latency_s": 0}
 
-    return {
+    row = {
         "system": system_name,
         "qid": query["id"],
         "tier": query["tier"],
@@ -47,6 +48,8 @@ def evaluate_one(system_name: str, system_fn: Any, query: dict[str, Any]) -> dic
         "alignment": alignment.score(trace, query),
         "latency_s": trace.get("latency_s", 0),
     }
+    row[OVERALL_METRIC_COL] = sum(row[m] for m in METRIC_COLS) / len(METRIC_COLS)
+    return row
 
 
 def main() -> None:
@@ -62,20 +65,21 @@ def main() -> None:
             row = evaluate_one(system_name, system_fn, q)
             rows.append(row)
             logger.info(
-                "  qid=%s tier=%s ARS=%.3f",
+                "  qid=%s tier=%s %s=%.3f",
                 row["qid"],
                 row["tier"],
-                sum(row[m] for m in METRIC_COLS) / len(METRIC_COLS),
+                OVERALL_METRIC_COL,
+                row[OVERALL_METRIC_COL],
             )
 
     df = pd.DataFrame(rows)
-    df["ARS"] = df[METRIC_COLS].mean(axis=1)
+    df["ARS"] = df[OVERALL_METRIC_COL]
 
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(RESULTS_PATH, index=False)
     logger.info("Results written to %s (%d rows)", RESULTS_PATH, len(df))
 
-    summary = df.groupby("system")[["ARS"] + METRIC_COLS].mean().round(4)
+    summary = df.groupby("system")[["ARS", OVERALL_METRIC_COL] + METRIC_COLS].mean().round(4)
     print("\n=== Results Summary ===")
     print(summary.to_string())
 
