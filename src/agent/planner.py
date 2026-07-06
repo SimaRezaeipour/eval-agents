@@ -22,6 +22,10 @@ Rules:
 - Dataset coverage: 1980-01-01 to 2020-04-01.
 - Every step that consumes prior data must list its upstream step IDs in depends_on.
 - Do NOT invent new tools or perform calculations inside args.
+- Use the exact tool argument names expected by the tools:
+  - load_prices: ticker, start, end
+  - compute_returns: prices_ref, kind
+  - compute_volatility: returns_ref, window, annualize
 - Args that reference a previous step's output must use the step's id string exactly.
 - Output MUST be valid JSON matching the Plan schema:
   {"steps": [{"id": "s1", "tool": "...", "args": {...}, "depends_on": [], "rationale": "..."}, ...]}

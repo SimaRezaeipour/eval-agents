@@ -11,10 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 def _resolve_refs(args: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
-    """Replace step-ID strings in args with their actual values from state.
+    """Normalize planner args to the tool signatures expected by the executor.
 
-    The planner emits args like {"prices_ref": "s1"} instead of copying raw data.
-    This function swaps those ID strings for the real objects.
+    The planner may emit aliases such as ``start_date``/``end_date`` or
+    ``prices``/``returns``. This function swaps step-ID strings for actual
+    values from state and maps common aliases to the canonical parameter names
+    used by the tool implementations.
     """
     resolved: dict[str, Any] = {}
     for key, val in args.items():
@@ -22,6 +24,22 @@ def _resolve_refs(args: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]
             resolved[key] = state[val]
         else:
             resolved[key] = val
+
+    alias_map = {
+        "start": ("start_date",),
+        "end": ("end_date",),
+        "prices_ref": ("prices", "prices_ref"),
+        "returns_ref": ("returns", "returns_ref"),
+    }
+
+    for canonical_name, aliases in alias_map.items():
+        if canonical_name in resolved:
+            continue
+        for alias in aliases:
+            if alias in resolved:
+                resolved[canonical_name] = resolved.pop(alias)
+                break
+
     return resolved
 
 
