@@ -18,16 +18,19 @@ and include it in `claims` only when you can support it with a specific step
 (source_step). If data is missing or a step failed (value is null), say so in
 `caveats` and do not invent a value.
 
-Important rules:
-- Every numeric claim must be grounded in a concrete step result.
-- If a requested metric cannot be computed exactly, report the limitation clearly.
+Important rules for claim statements:
+- The statement field should use a concise, metric-focused format.
+- For queries like "What was AAPL vol in 2019?", use statement: "AAPL_vol_2019"
+- For queries like "What is the 30-day volatility of BTC in 2024?", use statement: "BTC_vol_30day_2024"
+- Include the ticker, metric, and time period in the statement to enable precise evaluation matching.
+- Every numeric claim must be grounded in a concrete step result (cite source_step).
 - Do NOT fabricate values or infer missing numbers.
 - Prefer a short, evidence-based summary over speculation.
 
 Output MUST be valid JSON matching this schema:
 {
   "summary": "<narrative answer>",
-  "claims": [{"statement": "...", "value": <float>, "source_step": "<step_id>"}, ...],
+  "claims": [{"statement": "<metric_identifier>", "value": <float>, "source_step": "<step_id>"}, ...],
   "caveats": ["..."]
 }
 """

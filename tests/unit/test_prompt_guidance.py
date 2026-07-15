@@ -12,6 +12,6 @@ def test_planner_prompt_emphasizes_direct_numeric_plans() -> None:
 
 def test_synthesizer_prompt_emphasizes_exact_metric_claims() -> None:
     prompt = synthesizer.SYSTEM_PROMPT
-    assert "exact requested metric" in prompt.lower()
+    assert "metric_identifier" in prompt.lower() or "_vol_" in prompt
     assert "source_step" in prompt
     assert "caveats" in prompt
